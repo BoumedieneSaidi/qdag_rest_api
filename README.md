@@ -7,3 +7,6 @@
 # Get HTTP Request :
 # 1- /get-metadata => return existing database and their queries it returns a json object (see data.json in ressources/data.json)
 # 2- /run-query => it must have 2 parameters: query-id , and the db folder name (~/db-name) => it returns a string (results)
+# to run it in docker :
+# 1- sudo docker build -t rest_qdag_api .
+# 2- sudo docker run -p 8080:8080 rest_qdag_api:latest
