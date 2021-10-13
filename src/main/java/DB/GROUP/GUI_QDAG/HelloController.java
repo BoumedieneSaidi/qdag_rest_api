@@ -15,13 +15,10 @@ import org.springframework.core.io.ClassPathResource;
 public class HelloController {
 	@GetMapping("/run-query")
 	public String runQuery(@RequestParam("query") String query,@RequestParam("db") String db) throws IOException {
-        File queryFile = new File("/home/saidib/query.in");
-        queryFile.createNewFile();
-        FileWriter myWriter = new FileWriter(queryFile);
-        myWriter.write(query);
-        myWriter.close();
         Process proc = Runtime.getRuntime().exec("java -jar -Djava.library.path=/home/ubuntu/p_qdag/solibs/ /home/ubuntu/p_qdag/"+
-        "control_scripts_local/gquery.jar /home/ubuntu/db/  /home/ubuntu/query.in");
+        "control_scripts_local/gquery.jar /home/ubuntu/"+db+"/  /home/ubuntu/p_qdag/test_queries/"+query);
+	System.out.println("java -jar -Djava.library.path=/home/ubuntu/p_qdag/solibs/ /home/ubuntu/p_qdag/"+
+        "control_scripts_local/gquery.jar /home/ubuntu/"+db+"/  /home/ubuntu/p_qdag/test_queries/"+query);
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         //BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
         // Read the output from the command
@@ -32,7 +29,7 @@ public class HelloController {
         // Read any errors from the attempted command
         /*while ((resultLine = stdError.readLine()) != null) 
             System.out.println(resultLine);*/
-		return "{\"results\":\""+finalResult+"\"}";
+		return finalResult;
 	}
 
     @GetMapping("/get-metadata")

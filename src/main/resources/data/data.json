@@ -1,8 +1,8 @@
 {
   "databases":{
         "watdiv100k":{
-              "c1":"query1 in action",
-              "c2":"query 2 in action"
+              "C3.in":"query1 in action",
+              "C1.in":"query 2 in action"
         },
         "yago":{
               "y1":"query1 Y1 in action",
