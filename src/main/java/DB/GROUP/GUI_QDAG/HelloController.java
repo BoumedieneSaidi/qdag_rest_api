@@ -15,42 +15,62 @@ import org.springframework.core.io.ClassPathResource;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 public class HelloController {
+    public static final String RESULTS_DIR_PATH = System.getProperty("user.home") + "/" +"results_dir/";
+    public static final String DBS_PATH = System.getProperty("user.home") + "/" +"RDF_QDAG_TEST_DIR/";
+    public static final String QUERIES_PATH = System.getProperty("user.home") + "/" +"RDF_QDAG_TEST_DIR/watdiv/gStore/";
+    public static final int PAGE_SIZE = 10;
+    public HelloController(){
+        //créer le répertoir des résultats dés que le serveur est lancée
+        createResultsDir();
+    }
+    private void createResultsDir(){
+        File directory = new File(RESULTS_DIR_PATH);
+        if (!directory.exists())
+            directory.mkdir();
+    }
     @GetMapping("/run-query")
-    public Map<String, String> sendQuery(@RequestParam("db") String db,@RequestParam("queryPath") String queryPath,@RequestParam("resultFile") String resultFile) throws IOException,InterruptedException{
-        File dbDir = new File("/home/boumi/RDF_QDAG_TEST_DIR/"+ db);
-        File queryFile = new File("/home/boumi/RDF_QDAG_TEST_DIR/watdiv/gStore/"+ queryPath);
-        if (!dbDir.exists() || !queryFile.exists()) 
-           return new HashMap<>();
-        Process proc = Runtime.getRuntime().exec("java -jar /home/boumi/querySender.jar "+db+" "+queryPath+" "+resultFile);
-        proc.waitFor();
-        BufferedReader stdInput = new BufferedReader(new InputStreamReader(new FileInputStream("/home/boumi/queryResults/"+resultFile)));
-        String resultLine = null;
-        String finalResult = "";
-        String execTime = "";
-        int i = 0,maxPage = 10;
-        Path path = Paths.get("/home/boumi/queryResults/"+resultFile);
-        int nb = (int)(Files.lines(path).count() - 1);
-        while (i < (nb - 1) && (resultLine  = stdInput.readLine()) != null && i < maxPage){
-            if(i < maxPage - 1)
-                finalResult += resultLine  + "\n";
-           else
-                finalResult += resultLine;
-           execTime = resultLine;
-           i++;
-        }
+    public Map<String, String> runQuery(@RequestParam("db") String dbName,@RequestParam("queryPath") String queryName,@RequestParam("resultFile") String resultFileName) throws IOException,InterruptedException{        
+        String resultFilePath = RESULTS_DIR_PATH +  resultFileName;
+        Process proc = Runtime.getRuntime().exec("java -jar /home/boumi/querySender.jar "+ 
+        (DBS_PATH + dbName)+" "+(QUERIES_PATH + queryName)+" "+(resultFilePath));
+        proc.waitFor();//wait for process to finish
+        System.out.println("Process finished");
+        //Thread.sleep(4000);//should find a solution about that
+        Path pathToResultFile = Paths.get(resultFilePath);
+        //get result number
+        String resultStr = "";
+        int nbrResults = (int)(Files.lines(pathToResultFile).count() - 1);
+        if(nbrResults != 0)
+                resultStr = Files.lines(pathToResultFile).limit(PAGE_SIZE).collect(Collectors.joining ("\n"));
+        String execTime = Files.lines(pathToResultFile).skip(nbrResults).findFirst().get();
+        //retourner les résultat sous format json en utilisant le map
         Map<String, String> result = new HashMap<>();
-        result.put("finalResult",finalResult);
+        result.put("finalResult",nbrResults == 0 ? "":resultStr);
         result.put("execTime",execTime);
-        result.put("nbrRes",""+(Files.lines(path).count() - 1));
+        result.put("nbrRes",""+nbrResults);
 		return result;
     }
     @GetMapping("/fetch-data")
-    public Map<String, String> fetchData(@RequestParam("page") String page,@RequestParam("perPage") String perPage,@RequestParam("resultFile") String resultFile) throws IOException,InterruptedException{
-        String res = Files.lines(Paths.get("/home/boumi/queryResults/"+resultFile)).skip((Integer.valueOf(page) - 1) * Integer.valueOf(perPage)).
-        limit(Integer.valueOf(perPage)).collect(Collectors.joining ("\n"));;
+    public Map<String, String> fetchData(@RequestParam("page") int page,@RequestParam("perPage") int perPage,@RequestParam("resultFile") String resultFileName) throws IOException,InterruptedException{
+        String resultFilePath = RESULTS_DIR_PATH +  resultFileName;
+        String resultStr = Files.lines(Paths.get(resultFilePath)).skip((page - 1) * perPage).
+                            limit(perPage).collect(Collectors.joining ("\n"));
         Map<String, String> result = new HashMap<>();
-        result.put("finalResult",res);
-        result.put("nbrRes",""+(Files.lines(Paths.get("/home/boumi/queryResults/"+resultFile)).count() - 1));
+        result.put("finalResult",resultStr);
+        result.put("nbrRes",""+(Files.lines(Paths.get(resultFilePath)).count() - 1));
+		return result;
+    }
+    @GetMapping("/run-rdf3x")
+    public Map<String, String> runRDF3X(@RequestParam("db") String db,@RequestParam("query") String query) throws IOException,InterruptedException{
+        ProcessBuilder builder = new ProcessBuilder("/home/boumi/gh-rdf3x/bin/rdf3xquery","/home/boumi/gh-rdf3x/bin/"+"watdiv100k",QUERIES_PATH +query);
+        builder.redirectOutput(new File("/home/boumi/out.txt"));
+        builder.redirectError(new File("/home/boumi/out.txt"));
+        long t1 = System.currentTimeMillis();
+        Process proc = builder.start();
+        proc.waitFor();
+        long rdfExecTime = System.currentTimeMillis() - t1;
+        Map<String, String> result = new HashMap<>();
+        result.put("rdfExecTime",""+rdfExecTime);
 		return result;
     }
 }
