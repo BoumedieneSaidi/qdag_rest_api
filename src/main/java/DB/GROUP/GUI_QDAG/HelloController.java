@@ -34,7 +34,6 @@ public class HelloController {
         Process proc = Runtime.getRuntime().exec("java -jar /home/boumi/querySender.jar "+ 
         (DBS_PATH + dbName)+" "+(QUERIES_PATH + queryName)+" "+(resultFilePath));
         proc.waitFor();//wait for process to finish
-        System.out.println("Process finished");
         //Thread.sleep(4000);//should find a solution about that
         Path pathToResultFile = Paths.get(resultFilePath);
         //get result number
