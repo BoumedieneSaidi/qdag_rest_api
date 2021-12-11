@@ -77,7 +77,7 @@ public class HelloController {
     ,@RequestParam("optimizer") String optimizer,@RequestParam("isPrun") String isPrun) throws IOException,InterruptedException{        
         Map<String, String> result = new HashMap<>();
         String resultFilePath = RESULTS_DIR_PATH +  resultFileName;
-        Process proc = Runtime.getRuntime().exec("java -jar /home/boumi/querySender.jar "+ 
+        Process proc = Runtime.getRuntime().exec("java -jar /home/opc/jars/querySender.jar "+ 
         (DBS_PATH + mapBDD.get(dbName))+" "+(QUERIES_PATH + map.get(queryName))+" "+(resultFilePath)+" "+(optimizer.equals("Heuristics") ? "heuristics": "gofast")+" "+isPrun);
         BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         String line;
