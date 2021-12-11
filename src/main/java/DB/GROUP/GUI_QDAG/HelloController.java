@@ -75,9 +75,17 @@ public class HelloController {
     @GetMapping("/run-query")
     public Map<String, String> runQuery(@RequestParam("db") String dbName,@RequestParam("queryPath") String queryName,@RequestParam("resultFile") String resultFileName
     ,@RequestParam("optimizer") String optimizer,@RequestParam("isPrun") String isPrun) throws IOException,InterruptedException{        
+        Map<String, String> result = new HashMap<>();
         String resultFilePath = RESULTS_DIR_PATH +  resultFileName;
         Process proc = Runtime.getRuntime().exec("java -jar /home/boumi/querySender.jar "+ 
         (DBS_PATH + mapBDD.get(dbName))+" "+(QUERIES_PATH + map.get(queryName))+" "+(resultFilePath)+" "+(optimizer.equals("Heuristics") ? "heuristics": "gofast")+" "+isPrun);
+        BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+        String line;
+        while ((line = in.readLine()) != null) {
+            if(line.equals("error")){
+                 return result;
+            }
+        }
         proc.waitFor();//wait for process to finish
         //Thread.sleep(4000);//should find a solution about that
         Path pathToResultFile = Paths.get(resultFilePath);
@@ -88,7 +96,7 @@ public class HelloController {
                 resultStr = Files.lines(pathToResultFile).limit(PAGE_SIZE).collect(Collectors.joining ("\n"));
         String execTime = Files.lines(pathToResultFile).skip(nbrResults).findFirst().get();
         //retourner les résultat sous format json en utilisant le map
-        Map<String, String> result = new HashMap<>();
+        
         result.put("finalResult",nbrResults == 0 ? "":resultStr);
         result.put("execTime",execTime);
         result.put("nbrRes",""+nbrResults);
