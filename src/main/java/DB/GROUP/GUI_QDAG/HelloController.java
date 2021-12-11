@@ -16,8 +16,8 @@ import org.springframework.core.io.ClassPathResource;
 @RestController
 public class HelloController {
     public static final String RESULTS_DIR_PATH = System.getProperty("user.home") + "/" +"results_dir/";
-    public static final String DBS_PATH = "/mnt/Ubuntu/Demo_EDBT/datasets/";//System.getProperty("user.home") + "/" +"RDF_QDAG_TEST_DIR/";
-    public static final String QUERIES_PATH = "/mnt/Ubuntu/Demo_EDBT/queries/";//System.getProperty("user.home") + "/" +"RDF_QDAG_TEST_DIR/watdiv/gStore/";
+    public static final String DBS_PATH = System.getProperty("user.home") + "/" +"data/";//System.getProperty("user.home") + "/" +"RDF_QDAG_TEST_DIR/";
+    public static final String QUERIES_PATH = System.getProperty("user.home")+ "/queries/";//System.getProperty("user.home") + "/" +"RDF_QDAG_TEST_DIR/watdiv/gStore/";
     public static final int PAGE_SIZE = 10;
     private Map<String,String> map = new HashMap<>();
     private Map<String,String> mapBDD = new HashMap<>();
