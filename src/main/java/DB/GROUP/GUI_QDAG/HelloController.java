@@ -17,7 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 public class HelloController {
     public static final String RESULTS_DIR_PATH = System.getProperty("user.home") + "/" +"results_dir/";
     public static final String DBS_PATH = System.getProperty("user.home") + "/" +"data/";//System.getProperty("user.home") + "/" +"RDF_QDAG_TEST_DIR/";
-    public static final String QUERIES_PATH = System.getProperty("user.home")+ "/queries/";//System.getProperty("user.home") + "/" +"RDF_QDAG_TEST_DIR/watdiv/gStore/";
+    public static final String QUERIES_PATH = System.getProperty("user.home")+ "/data/queries/";//System.getProperty("user.home") + "/" +"RDF_QDAG_TEST_DIR/watdiv/gStore/";
     public static final int PAGE_SIZE = 10;
     private Map<String,String> map = new HashMap<>();
     private Map<String,String> mapBDD = new HashMap<>();
@@ -77,7 +77,7 @@ public class HelloController {
     ,@RequestParam("optimizer") String optimizer,@RequestParam("isPrun") String isPrun) throws IOException,InterruptedException{        
         Map<String, String> result = new HashMap<>();
         String resultFilePath = RESULTS_DIR_PATH +  resultFileName;
-        Process proc = Runtime.getRuntime().exec("java -jar /home/opc/jars/querySender.jar "+ 
+        Process proc = Runtime.getRuntime().exec("java -jar "+System.getProperty("user.home")+"/data/jars/querySender.jar "+ 
         (DBS_PATH + mapBDD.get(dbName))+" "+(QUERIES_PATH + map.get(queryName))+" "+(resultFilePath)+" "+(optimizer.equals("Heuristics") ? "heuristics": "gofast")+" "+isPrun);
         BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         String line;
