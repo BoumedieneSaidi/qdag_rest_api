@@ -1,6 +1,7 @@
 package DB.GROUP.GUI_QDAG;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.io.File;
 import java.nio.file.*;
 import java.util.*;
@@ -122,18 +123,14 @@ public class HelloController {
     private void launchInstances(){
         instancesPorts.forEach((db,port)-> {
             try {
-                System.out.println("Eooooo");
-                System.out.println("numactl --physcpubind=+1 java -jar -Djava.library.path="+MAIN_DIR+"solibs -Xms4g -Xmx16g "+MAIN_DIR+"qdag_jars/instance.jar "
-                +MAIN_DIR+"databases/"+db+" "+port);
-                Process proc = Runtime.getRuntime().exec("numactl --physcpubind=+1 java -jar -Djava.library.path="+MAIN_DIR+"solibs -Xms4g -Xmx16g "+MAIN_DIR+"qdag_jars/instance.jar "
-                +MAIN_DIR+"databases/"+db+" "+port);
-                System.out.println("java -jar -Djava.library.path="+MAIN_DIR+"solibs "+MAIN_DIR+"qdag_jars/instance.jar "
-                +MAIN_DIR+"databases/"+db+" "+port);
-                /*BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                String line;
-                while ((line = in.readLine()) != null) {
-                    System.out.println(line);
-                }*/
+                ProcessBuilder builder = new ProcessBuilder("numactl","--physcpubind=+1","java","-jar","-Djava.library.path="+MAIN_DIR+"solibs","-Xms4g","-Xmx16g",MAIN_DIR+"qdag_jars/instance.jar",
+                MAIN_DIR+"databases/"+db,""+port);
+                //Process proc = Runtime.getRuntime().exec("numactl --physcpubind=+1 java -jar -Djava.library.path="+MAIN_DIR+"solibs -Xms4g -Xmx16g "+MAIN_DIR+"qdag_jars/instance.jar "
+                //+MAIN_DIR+"databases/"+db+" "+port+"  &> /home/boumi/qdag_log");
+                File log = new File(MAIN_DIR+"/log/"+db);
+                builder.redirectErrorStream(true);
+                builder.redirectOutput(Redirect.appendTo(log));
+                Process process = builder.start();
             } catch (IOException e) { e.printStackTrace();}
         });
         
