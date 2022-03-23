@@ -8,6 +8,10 @@ import java.util.*;
 import java.nio.file.Files;
 import java.util.stream.Collectors;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +26,7 @@ public class HelloController {
     public static final int PAGE_SIZE = 10;
     private Map<String,String> map = new HashMap<>();
     private Map<String,String> mapBDD = new HashMap<>();
+    private Map<String,String> mapBDDVirtuoso = new HashMap<>();
     private Map<String,String> rdfResult = new HashMap<>();
     private Map<String,Integer> instancesPorts = new HashMap<>();
     public HelloController(){
@@ -46,8 +51,11 @@ public class HelloController {
         System.out.println(mapBDD);
         System.out.println(instancesPorts);
         System.out.println(dbName);
+        System.out.println(queryName);
         int port = instancesPorts.get(mapBDD.get(dbName));
         Process proc = Runtime.getRuntime().exec("java -jar "+MAIN_DIR+"qdag_jars/querySender.jar "+ 
+        port+" "+(QUERIES_PATH + map.get(queryName))+" "+(optimizer.equals("Heuristics") ? "heuristics": "gofast")+" "+isPrun+" "+resultFilePath);
+        System.out.println("java -jar "+MAIN_DIR+"qdag_jars/querySender.jar "+ 
         port+" "+(QUERIES_PATH + map.get(queryName))+" "+(optimizer.equals("Heuristics") ? "heuristics": "gofast")+" "+isPrun+" "+resultFilePath);
         BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         String line;
@@ -96,6 +104,41 @@ public class HelloController {
         result.put("rdfExecTime",""+(rdfResult.get(query)));
 		return result;
     }
+    @GetMapping("/run-virtuoso")
+    public Map<String, String> runVirtuoso(@RequestParam("db") String db,@RequestParam("query") String query) throws IOException,InterruptedException{
+        /*ProcessBuilder builder = new ProcessBuilder("/home/boumi/gh-rdf3x/bin/rdf3xquery","/home/boumi/gh-rdf3x/bin/"+"watdiv100k",QUERIES_PATH +query);
+        builder.redirectOutput(new File("/home/boumi/out.txt"));
+        builder.redirectError(new File("/home/boumi/out.txt"));
+        long t1 = System.currentTimeMillis();
+        Process proc = builder.start();
+        proc.waitFor();
+        long rdfExecTime = System.currentTimeMillis() - t1;*/
+       // Process proc = Runtime.getRuntime().exec("docker exec -it virtuoso-watdiv100m isql-v -U dba -P myDbaPassword  exec=\"load C1.in;\"");
+        String a="load "+map.get(query)+";";
+        System.out.println("Db:"+mapBDDVirtuoso.get(db));
+        ProcessBuilder builder = new ProcessBuilder("docker","exec","-i",mapBDDVirtuoso.get(db),"isql-v","-U","dba","-P","myDbaPassword","exec="+a);
+        builder.redirectOutput(new File("/home/boumi/out.txt"));
+        builder.redirectError(new File("/home/boumi/out.txt"));
+         
+        Process proc = builder.start();
+        proc.waitFor();
+
+       
+       
+        String lastLine = "",sCurrentLine ="";
+        BufferedReader br = new BufferedReader(new FileReader("/home/boumi/out.txt"));
+        while ((sCurrentLine = br.readLine()) != null)
+            lastLine = sCurrentLine;
+        Map<String, String> result = new HashMap<>();
+        result.put("virtuosoExecTime",findIntegers(lastLine).get(1) + "");
+        ProcessBuilder dockerRestarter = new ProcessBuilder("docker","restart",mapBDDVirtuoso.get(db));
+        /*dockerRestarter.redirectOutput(new File("/home/boumi/out.txt"));
+        dockerRestarter.redirectError(new File("/home/boumi/out.txt"));*/
+         
+        Process procRestarter = dockerRestarter.start();
+        procRestarter.waitFor();
+		return result;
+    }
     private void initRdfResult(){
         rdfResult.put("Complex 1","12920");rdfResult.put("Complex 2","660");rdfResult.put("Complex 3","66110");
         rdfResult.put("SnowFlake-Shaped_1","730"); rdfResult.put("SnowFlake-Shaped_2","780");rdfResult.put("SnowFlake-Shaped_3","1460") ;   
@@ -110,13 +153,21 @@ public class HelloController {
         map.put("Linear 1","L1.in")  ;map.put("Linear 2","L2.in") ; map.put("Linear 3","L4.in")  ;
         map.put("Grouping 1","G1.in") ; map.put("Grouping 2","G2.in")  ;map.put("Grouping 3","G3.in")  ;map.put("Grouping 4","G4.in")  ;
         map.put("Sorting 1","O1.in")  ;map.put("Sorting 2","O2.in")  ;map.put("Sorting 3","O3.in")  ;map.put("Sorting 4","O4.in")  ;
-        map.put("RDF First","y1.in")  ;map.put("Spatial First","yz.in")  ;
+        map.put("Yago 1","y1.in")  ;map.put("Yago 2","yz.in")  ;map.put("Yago 3","y3.in")  ;map.put("Yago 4","y4.in")  ;
+        map.put("Yago 5","y5.in")  ;map.put("Yago 6","y6.in")  ;map.put("Yago 7","y7.in")  ;map.put("Yago 8","y8.in")  ;
     }
     private void mapDBSName(){
         mapBDD.put("Watdiv100m","watdiv100m_bin");
+        //mapBDD.put("Watdiv100m","watdiv1000m_bin");
         mapBDD.put("Yago","YAGO_BASE_final_bin2");
+        
+        mapBDDVirtuoso.put("Yago","virtuoso-yago");
+        mapBDDVirtuoso.put("Watdiv100m","virtuoso-watdiv100m");
+        //mapBDDVirtuoso.put("Watdiv1000m","virtuoso-watdiv1000m");
+
         instancesPorts.put("watdiv100m_bin",64000);
-        instancesPorts.put("YAGO_BASE_final_bin2",64001);
+        //instancesPorts.put("watdiv1000m_bin",64001);
+        instancesPorts.put("YAGO_BASE_final_bin2",64002);
         /*mapBDD.put("watdiv100k","watdiv100k");
         instancesPorts.put("watdiv100k",64000);*/
     }
@@ -134,5 +185,15 @@ public class HelloController {
             } catch (IOException e) { e.printStackTrace();}
         });
         
+    }
+    List<String> findIntegers(String stringToSearch) {
+        Pattern integerPattern = Pattern.compile("-?\\d+");
+        Matcher matcher = integerPattern.matcher(stringToSearch);
+
+        List<String> integerList = new ArrayList<>();
+        while (matcher.find()) {
+            integerList.add(matcher.group());
+        }
+        return integerList;
     }
 }
