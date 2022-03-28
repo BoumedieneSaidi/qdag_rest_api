@@ -28,10 +28,12 @@ public class HelloController {
     private Map<String,String> mapBDD = new HashMap<>();
     private Map<String,String> mapBDDVirtuoso = new HashMap<>();
     private Map<String,String> rdfResult = new HashMap<>();
+    private Map<String,String> virtuosoResult = new HashMap<>();
     private Map<String,Integer> instancesPorts = new HashMap<>();
     public HelloController(){
         mapDBSName();
         initRdfResult();
+        initVirtuosoResult();
         mapQueriesName();
         //créer le répertoir des résultats dés que le serveur est lancée
         createResultsDir();
@@ -114,6 +116,12 @@ public class HelloController {
         proc.waitFor();
         long rdfExecTime = System.currentTimeMillis() - t1;*/
        // Process proc = Runtime.getRuntime().exec("docker exec -it virtuoso-watdiv100m isql-v -U dba -P myDbaPassword  exec=\"load C1.in;\"");
+       if(db.equals("Yago")){
+           Map<String, String> result = new HashMap<>();
+           //System.out.println("Olaaa:"+query+", result:"+)
+            result.put("virtuosoExecTime", virtuosoResult.get(query));
+            return result;
+       }else{
         String a="load "+map.get(query)+";";
         System.out.println("Db:"+mapBDDVirtuoso.get(db));
         ProcessBuilder builder = new ProcessBuilder("docker","exec","-i",mapBDDVirtuoso.get(db),"isql-v","-U","dba","-P","myDbaPassword","exec="+a);
@@ -137,13 +145,21 @@ public class HelloController {
          
         Process procRestarter = dockerRestarter.start();
         procRestarter.waitFor();
-		return result;
+		return result;}
     }
     private void initRdfResult(){
-        rdfResult.put("Complex 1","12920");rdfResult.put("Complex 2","660");rdfResult.put("Complex 3","66110");
-        rdfResult.put("SnowFlake-Shaped_1","730"); rdfResult.put("SnowFlake-Shaped_2","780");rdfResult.put("SnowFlake-Shaped_3","1460") ;   
-        rdfResult.put("Linear 1","60")  ;rdfResult.put("Linear 2","1090") ; rdfResult.put("Linear 3","750")  ;
-        rdfResult.put("Star 1","2010")   ;rdfResult.put("Star 2","280")  ;rdfResult.put("Star 3","920") ;
+        /*rdfResult.put("Complex 1","2200");rdfResult.put("Complex 2","5070");rdfResult.put("Complex 3","20757");
+        rdfResult.put("SnowFlake-Shaped_1","1670"); rdfResult.put("SnowFlake-Shaped_2","1780");rdfResult.put("SnowFlake-Shaped_3","1690") ;   
+        rdfResult.put("Linear 1","33")  ;rdfResult.put("Linear 2","560") ; rdfResult.put("Linear 3","1910")  ;
+        rdfResult.put("Star 1","1408")   ;rdfResult.put("Star 2","163")  ;rdfResult.put("Star 3","42
+        ") ;
+        /*rdfResult.put("Yago 1","y1.in")  ;rdfResult.put("Yago 2","yz.in")  ;rdfResult.put("Yago 3","y3.in")  ;rdfResult.put("Yago 4","y4.in")  ;
+        rdfResult.put("Yago 5","y5.in")  ;rdfResult.put("Yago 6","y6.in")  ;rdfResult.put("Yago 7","y7.in")  ;rdfResult.put("Yago 8","y8.in")  ;*/
+    }
+    private void initVirtuosoResult(){
+        virtuosoResult.put("Yago 1","25016")  ;virtuosoResult.put("Yago 2","20079")  ;
+        //virtuosoResult.put("Yago 3","y3.in")  ;virtuosoResult.put("Yago 4","y4.in")  ;
+        //virtuosoResult.put("Yago 5","y5.in")  ;virtuosoResult.put("Yago 6","y6.in")  ;virtuosoResult.put("Yago 7","y7.in")  ;virtuosoResult.put("Yago 8","y8.in")  ;
     }
     private void mapQueriesName(){
         map.put("Wild Card 1","WC1.in");map.put("Wild Card 2","WC2.in");map.put("Wild Card 3","WC3.in");
@@ -157,12 +173,12 @@ public class HelloController {
         map.put("Yago 5","y5.in")  ;map.put("Yago 6","y6.in")  ;map.put("Yago 7","y7.in")  ;map.put("Yago 8","y8.in")  ;
     }
     private void mapDBSName(){
-        mapBDD.put("Watdiv100m","watdiv100m_bin");
-        //mapBDD.put("Watdiv100m","watdiv1000m_bin");
+        mapBDD.put("Watdiv100M","watdiv100m_bin");
+        mapBDD.put("Watdiv1B","watdiv1000m_bin");
         mapBDD.put("Yago","YAGO_BASE_final_bin2");
         
         mapBDDVirtuoso.put("Yago","virtuoso-yago");
-        mapBDDVirtuoso.put("Watdiv100m","virtuoso-watdiv100m");
+        mapBDDVirtuoso.put("Watdiv100M","virtuoso-watdiv100m");
         //mapBDDVirtuoso.put("Watdiv1000m","virtuoso-watdiv1000m");
 
         instancesPorts.put("watdiv100m_bin",64000);
@@ -176,6 +192,8 @@ public class HelloController {
             try {
                 ProcessBuilder builder = new ProcessBuilder("numactl","--physcpubind=+1","java","-jar","-Djava.library.path="+MAIN_DIR+"solibs","-Xms4g","-Xmx16g",MAIN_DIR+"qdag_jars/instance.jar",
                 MAIN_DIR+"databases/"+db,""+port);
+                System.out.println("numactl"+" --physcpubind=+1"+" java"+" -jar"+" -Djava.library.path="+MAIN_DIR+" solibs"+" -Xms4g"+" -Xmx16g "+MAIN_DIR+" qdag_jars/instance.jar "+
+                MAIN_DIR+"databases/"+db+" "+port);
                 //Process proc = Runtime.getRuntime().exec("numactl --physcpubind=+1 java -jar -Djava.library.path="+MAIN_DIR+"solibs -Xms4g -Xmx16g "+MAIN_DIR+"qdag_jars/instance.jar "
                 //+MAIN_DIR+"databases/"+db+" "+port+"  &> /home/boumi/qdag_log");
                 File log = new File(MAIN_DIR+"/log/"+db);
