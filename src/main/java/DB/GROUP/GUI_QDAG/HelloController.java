@@ -50,10 +50,6 @@ public class HelloController {
     ,@RequestParam("optimizer") String optimizer,@RequestParam("isPrun") String isPrun) throws IOException,InterruptedException{        
         Map<String, String> result = new HashMap<>();
         String resultFilePath = RESULTS_DIR_PATH +  resultFileName;
-        System.out.println(mapBDD);
-        System.out.println(instancesPorts);
-        System.out.println(dbName);
-        System.out.println(queryName);
         int port = instancesPorts.get(mapBDD.get(dbName));
         Process proc = Runtime.getRuntime().exec("java -jar "+MAIN_DIR+"qdag_jars/querySender.jar "+ 
         port+" "+(QUERIES_PATH + map.get(queryName))+" "+(optimizer.equals("Heuristics") ? "heuristics": "gofast")+" "+isPrun+" "+resultFilePath);
