@@ -167,12 +167,14 @@ public class HelloController {
         map.put("Sorting 1","O1.in")  ;map.put("Sorting 2","O2.in")  ;map.put("Sorting 3","O3.in")  ;map.put("Sorting 4","O4.in")  ;
         map.put("Yago 1","y1.in")  ;map.put("Yago 2","yz.in")  ;map.put("Yago 3","y3.in")  ;map.put("Yago 4","y4.in")  ;
         map.put("Yago 5","y5.in")  ;map.put("Yago 6","y6.in")  ;map.put("Yago 7","y7.in")  ;map.put("Yago 8","y8.in")  ;
+        map.put("q1","q1.in");map.put("q2","q2.in");map.put("q3","q3.in");map.put("q4","q4.in");map.put("q5","q5.in");map.put("q6","q6.in");
     }
     private void mapDBSName(){
         mapBDD.put("Watdiv100M","watdiv100m_bin");
         mapBDD.put("Watdiv1B","watdiv1000m_bin");
         mapBDD.put("Yago","YAGO_BASE_final_bin2");
-        
+        mapBDD.put("shs","shs_v0_1_bin");
+
         mapBDDVirtuoso.put("Yago","virtuoso-yago");
         mapBDDVirtuoso.put("Watdiv100M","virtuoso-watdiv100m");
         //mapBDDVirtuoso.put("Watdiv1000m","virtuoso-watdiv1000m");
@@ -180,6 +182,7 @@ public class HelloController {
         instancesPorts.put("watdiv100m_bin",64000);
         //instancesPorts.put("watdiv1000m_bin",64001);
         instancesPorts.put("YAGO_BASE_final_bin2",64002);
+        instancesPorts.put("shs_v0_1_bin",64003);
         /*mapBDD.put("watdiv100k","watdiv100k");
         instancesPorts.put("watdiv100k",64000);*/
     }
