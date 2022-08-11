@@ -82,11 +82,15 @@ public class HelloController {
     @GetMapping("/fetch-data")
     public Map<String, String> fetchData(@RequestParam("page") int page,@RequestParam("perPage") int perPage,@RequestParam("resultFile") String resultFileName) throws IOException,InterruptedException{
         String resultFilePath = RESULTS_DIR_PATH +  resultFileName;
+        int nbrResults = Files.lines(Paths.get(resultFilePath)).count() - 1;
+
+        int reste = nbrResults - ((page - 1) * perPage);
         String resultStr = Files.lines(Paths.get(resultFilePath)).skip((page - 1) * perPage).
-                            limit(perPage).collect(Collectors.joining ("\n"));
+                            limit(reste < perPage ? reste : perPage).collect(Collectors.joining ("\n"));
+
         Map<String, String> result = new HashMap<>();
         result.put("finalResult",resultStr);
-        result.put("nbrRes",""+(Files.lines(Paths.get(resultFilePath)).count() - 1));
+        result.put("nbrRes",""+nbrResults);
 		return result;
     }
     @GetMapping("/run-rdf3x")
