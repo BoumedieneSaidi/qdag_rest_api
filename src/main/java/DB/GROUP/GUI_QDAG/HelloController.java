@@ -70,7 +70,7 @@ public class HelloController {
         String resultStr = "";
         int nbrResults = (int)(Files.lines(pathToResultFile).count() - 1);
         if(nbrResults != 0)
-                resultStr = Files.lines(pathToResultFile).limit(PAGE_SIZE).collect(Collectors.joining ("\n"));
+                resultStr = Files.lines(pathToResultFile).limit(nbrResults < PAGE_SIZE ? nbrResults : PAGE_SIZE).collect(Collectors.joining ("\n"));
         String execTime = Files.lines(pathToResultFile).skip(nbrResults).findFirst().get();
         //retourner les résultat sous format json en utilisant le map
         
