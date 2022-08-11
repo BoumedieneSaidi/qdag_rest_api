@@ -82,7 +82,7 @@ public class HelloController {
     @GetMapping("/fetch-data")
     public Map<String, String> fetchData(@RequestParam("page") int page,@RequestParam("perPage") int perPage,@RequestParam("resultFile") String resultFileName) throws IOException,InterruptedException{
         String resultFilePath = RESULTS_DIR_PATH +  resultFileName;
-        int nbrResults = Files.lines(Paths.get(resultFilePath)).count() - 1;
+        int nbrResults = (int)(Files.lines(Paths.get(resultFilePath)).count()) - 1;
 
         int reste = nbrResults - ((page - 1) * perPage);
         String resultStr = Files.lines(Paths.get(resultFilePath)).skip((page - 1) * perPage).
